@@ -20,12 +20,19 @@ export interface FeaturedItem {
   sme_id?: number;
 }
 
+interface ThemeClasses {
+  btnBg?: string;
+  btnHover?: string;
+  btnText?: string;
+}
+
 interface FeaturedItemCardProps {
   item: FeaturedItem;
   index?: number;
   onBuyNow?: (item: FeaturedItem) => void;
   onVisitStore?: (item: FeaturedItem) => void;
   variant?: "default" | "hot" | "trending";
+  themeClasses?: ThemeClasses;
 }
 
 const FeaturedItemCard = ({ item, index = 0, onBuyNow, onVisitStore, variant = "default" }: FeaturedItemCardProps) => {
