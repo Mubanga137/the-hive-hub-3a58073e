@@ -41,46 +41,26 @@ const App = () => (
             <Route path="/store/:smeId" element={<StorePage />} />
             <Route path="/category/:name" element={<CategoryPage />} />
 
-            {/* Customer */}
-            <Route path="/customer-dash" element={
-              <ProtectedRoute allowedRoles={["customer"]}>
-                <CustomerDashboard />
-              </ProtectedRoute>
-            } />
+            {/* Customer — temporarily open */}
+            <Route path="/customer-dash" element={<CustomerDashboard />} />
 
-            {/* Vendor / SME */}
-            <Route path="/retailer-studio" element={
-              <ProtectedRoute allowedRoles={["vendor"]}>
-                <RetailerStudioDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/studio" element={
-              <ProtectedRoute allowedRoles={["vendor"]}>
-                <RetailerStudioDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/retailer-studio/reels" element={<ProtectedRoute allowedRoles={["vendor"]}><PulseReels /></ProtectedRoute>} />
-            <Route path="/retailer-studio/links" element={<ProtectedRoute allowedRoles={["vendor"]}><ProductLinks /></ProtectedRoute>} />
-            <Route path="/retailer-studio/products" element={<ProtectedRoute allowedRoles={["vendor"]}><Products /></ProtectedRoute>} />
-            <Route path="/retailer-studio/services" element={<ProtectedRoute allowedRoles={["vendor"]}><Services /></ProtectedRoute>} />
-            <Route path="/retailer-studio/orders" element={<ProtectedRoute allowedRoles={["vendor"]}><Orders /></ProtectedRoute>} />
-            <Route path="/retailer-studio/credits" element={<ProtectedRoute allowedRoles={["vendor"]}><PulseCredits /></ProtectedRoute>} />
-            <Route path="/retailer-studio/wholesale" element={<ProtectedRoute allowedRoles={["vendor"]}><WholesaleBountyHub /></ProtectedRoute>} />
-            <Route path="/retailer-studio/storefront" element={<ProtectedRoute allowedRoles={["vendor"]}><OnlineStorefront /></ProtectedRoute>} />
+            {/* Vendor / SME — temporarily open */}
+            <Route path="/retailer-studio" element={<RetailerStudioDashboard />} />
+            <Route path="/studio" element={<RetailerStudioDashboard />} />
+            <Route path="/retailer-studio/reels" element={<PulseReels />} />
+            <Route path="/retailer-studio/links" element={<ProductLinks />} />
+            <Route path="/retailer-studio/products" element={<Products />} />
+            <Route path="/retailer-studio/services" element={<Services />} />
+            <Route path="/retailer-studio/orders" element={<Orders />} />
+            <Route path="/retailer-studio/credits" element={<PulseCredits />} />
+            <Route path="/retailer-studio/wholesale" element={<WholesaleBountyHub />} />
+            <Route path="/retailer-studio/storefront" element={<OnlineStorefront />} />
 
-            {/* Wholesaler */}
-            <Route path="/warehouse" element={
-              <ProtectedRoute allowedRoles={["wholesaler"]}>
-                <Warehouse />
-              </ProtectedRoute>
-            } />
+            {/* Wholesaler — temporarily open */}
+            <Route path="/warehouse" element={<Warehouse />} />
 
-            {/* Gig Worker */}
-            <Route path="/gig-radar" element={
-              <ProtectedRoute allowedRoles={["gig_worker"]}>
-                <GigRadar />
-              </ProtectedRoute>
-            } />
+            {/* Gig Worker — temporarily open */}
+            <Route path="/gig-radar" element={<GigRadar />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
