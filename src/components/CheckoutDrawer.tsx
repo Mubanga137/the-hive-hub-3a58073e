@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Zap, Minus, Plus } from "lucide-react";
+import { X, Zap, Minus, Plus, Wallet } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,11 +14,14 @@ interface CheckoutDrawerProps {
 const CheckoutDrawer = ({ open, onOpenChange, item }: CheckoutDrawerProps) => {
   const [quantity, setQuantity] = useState(1);
   const [submitting, setSubmitting] = useState(false);
-  const { user } = useAuth();
+  const [payMethod, setPayMethod] = useState<"wallet" | "cod">("wallet");
+  const { user, profile } = useAuth();
 
   if (!item) return null;
 
   const total = item.price * quantity;
+  const walletBalance = profile?.zmw_balance ?? 0;
+  const canPayWallet = walletBalance >= total;
 
   const handleConfirm = async () => {
     if (!user) {
@@ -27,12 +30,47 @@ const CheckoutDrawer = ({ open, onOpenChange, item }: CheckoutDrawerProps) => {
     }
     setSubmitting(true);
 
+    if (payMethod === "wallet") {
+      // Verify wallet balance
+      const { data: prof } = await supabase.from("profiles").select("zmw_balance").eq("user_id", user.id).maybeSingle();
+      const currentBalance = prof?.zmw_balance ?? 0;
+      if (currentBalance < total) {
+        toast.error("Insufficient wallet balance. Top up your wallet first.");
+        setSubmitting(false);
+        return;
+      }
+
+      // Deduct from wallet
+      const newBalance = currentBalance - total;
+      const { error: walletErr } = await supabase
+        .from("profiles")
+        .update({ zmw_balance: newBalance } as any)
+        .eq("user_id", user.id);
+
+      if (walletErr) {
+        toast.error("Failed to deduct from wallet: " + walletErr.message);
+        setSubmitting(false);
+        return;
+      }
+
+      // Record ledger entry
+      await supabase.from("hive_ledger").insert({
+        user_id: user.id,
+        amount: total,
+        transaction_type: "purchase",
+      });
+    }
+
+    // Create order
+    const systemFee = Math.round(total * 0.05 * 100) / 100;
     const { error } = await supabase.from("orders").insert({
       buyer_id: user.id,
       item_id: item.id || null,
       total_price: total,
-      status: "pending",
+      status: "processing",
       sme_id: item.sme_id || null,
+      system_fee: systemFee,
+      hive_skim_amount: systemFee,
     });
 
     if (error) {
@@ -49,23 +87,13 @@ const CheckoutDrawer = ({ open, onOpenChange, item }: CheckoutDrawerProps) => {
     <AnimatePresence>
       {open && (
         <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => onOpenChange(false)}
-            className="fixed inset-0 bg-foreground/30 backdrop-blur-sm z-[80]"
-          />
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => onOpenChange(false)} className="fixed inset-0 bg-foreground/30 backdrop-blur-sm z-[80]" />
+          <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[90] bg-card rounded-t-2xl border-t border-primary/20 shadow-2xl max-h-[80vh] overflow-auto"
-          >
+            className="fixed bottom-0 left-0 right-0 z-[90] bg-card rounded-t-2xl border-t border-primary/20 shadow-2xl max-h-[80vh] overflow-auto">
             <div className="p-5">
               <div className="w-12 h-1 rounded-full bg-border mx-auto mb-4" />
-
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-lg font-display font-bold text-foreground">Lock This Deal</h3>
                 <button onClick={() => onOpenChange(false)} className="p-1.5 rounded-lg hover:bg-secondary">
@@ -88,7 +116,7 @@ const CheckoutDrawer = ({ open, onOpenChange, item }: CheckoutDrawerProps) => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-4">
                 <span className="text-sm font-medium text-foreground">Quantity</span>
                 <div className="flex items-center gap-3">
                   <button onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -103,13 +131,37 @@ const CheckoutDrawer = ({ open, onOpenChange, item }: CheckoutDrawerProps) => {
                 </div>
               </div>
 
+              {/* Payment method */}
+              <div className="mb-4">
+                <p className="text-sm font-medium text-foreground mb-2">Payment Method</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={() => setPayMethod("wallet")}
+                    className={`p-3 rounded-xl border text-sm font-semibold flex items-center gap-2 transition-colors ${
+                      payMethod === "wallet" ? "border-primary bg-primary/10 text-primary" : "border-border text-foreground hover:bg-secondary"
+                    }`}>
+                    <Wallet size={16} /> Wallet
+                  </button>
+                  <button onClick={() => setPayMethod("cod")}
+                    className={`p-3 rounded-xl border text-sm font-semibold flex items-center gap-2 transition-colors ${
+                      payMethod === "cod" ? "border-primary bg-primary/10 text-primary" : "border-border text-foreground hover:bg-secondary"
+                    }`}>
+                    💵 Cash on Delivery
+                  </button>
+                </div>
+                {payMethod === "wallet" && (
+                  <p className={`text-xs mt-2 ${canPayWallet ? "text-emerald-500" : "text-destructive"}`}>
+                    Wallet balance: ZMW {walletBalance.toLocaleString()} {!canPayWallet && "— Insufficient funds"}
+                  </p>
+                )}
+              </div>
+
               <div className="flex justify-between items-center mb-4 pb-4 border-b border-border">
                 <span className="text-sm text-muted-foreground">Total</span>
                 <span className="text-xl font-bold text-primary">ZMW {total.toFixed(2)}</span>
               </div>
 
-              <button onClick={handleConfirm} disabled={submitting}
-                className="btn-gold w-full flex items-center justify-center gap-2 py-3.5 text-sm">
+              <button onClick={handleConfirm} disabled={submitting || (payMethod === "wallet" && !canPayWallet)}
+                className="btn-gold w-full flex items-center justify-center gap-2 py-3.5 text-sm disabled:opacity-50">
                 <Zap size={16} />
                 {submitting ? "Processing..." : "CONFIRM & LOCK DEAL"}
               </button>
