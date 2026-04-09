@@ -35,7 +35,7 @@ interface FeaturedItemCardProps {
   themeClasses?: ThemeClasses;
 }
 
-const FeaturedItemCard = ({ item, index = 0, onBuyNow, onVisitStore, variant = "default" }: FeaturedItemCardProps) => {
+const FeaturedItemCard = ({ item, index = 0, onBuyNow, onVisitStore, variant = "default", themeClasses }: FeaturedItemCardProps) => {
   const savings = item.old_price ? Math.round(((item.old_price - item.price) / item.old_price) * 100) : 0;
   const isService = item.item_type === "service";
 
@@ -108,7 +108,9 @@ const FeaturedItemCard = ({ item, index = 0, onBuyNow, onVisitStore, variant = "
         <button
           onClick={() => onBuyNow?.(item)}
           className={`w-full flex items-center justify-center gap-1.5 text-xs py-2.5 px-3 rounded-lg font-bold transition-colors ${
-            variant === "hot" ? "bg-red-500 hover:bg-red-600 text-white" : variant === "trending" ? "bg-orange-500 hover:bg-orange-600 text-white" : "btn-gold"
+            themeClasses
+              ? `${themeClasses.btnBg} ${themeClasses.btnHover} ${themeClasses.btnText}`
+              : variant === "hot" ? "bg-red-500 hover:bg-red-600 text-white" : variant === "trending" ? "bg-orange-500 hover:bg-orange-600 text-white" : "btn-gold"
           }`}
         >
           🛒 {isService ? "BOOK ORDER" : "BUY NOW"}
