@@ -1,19 +1,15 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Filter } from "lucide-react";
 import FeaturedItemCard, { FeaturedItem } from "@/components/FeaturedItemCard";
 import CheckoutDrawer from "@/components/CheckoutDrawer";
-import HoneycombBackground from "@/components/HoneycombBackground";
+import ThemedHoneycombBackground from "@/components/ThemedHoneycombBackground";
+import TechBanner from "@/components/category/TechBanner";
+import FoodHotSection from "@/components/category/FoodHotSection";
+import FashionMasonry from "@/components/category/FashionMasonry";
+import { categoryThemes } from "@/lib/categoryThemes";
 import { supabase } from "@/integrations/supabase/client";
-
-const categoryConfig: Record<string, { emoji: string; title: string; gradient: string }> = {
-  tech: { emoji: "📱", title: "Tech", gradient: "radial-gradient(ellipse at 50% 0%, rgba(6,182,212,0.15) 0%, transparent 60%)" },
-  fashion: { emoji: "👗", title: "Fashion", gradient: "radial-gradient(ellipse at 50% 0%, rgba(30,58,138,0.12) 0%, transparent 60%)" },
-  food: { emoji: "🍟", title: "Food", gradient: "radial-gradient(ellipse at 50% 0%, rgba(249,115,22,0.12) 0%, transparent 60%)" },
-  entertainment: { emoji: "🎬", title: "Entertainment", gradient: "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.15) 0%, transparent 60%)" },
-  beauty: { emoji: "💄", title: "Beauty", gradient: "radial-gradient(ellipse at 50% 0%, rgba(244,114,182,0.12) 0%, transparent 60%)" },
-};
 
 const fallbackItems: Record<string, FeaturedItem[]> = {
   tech: [
@@ -52,7 +48,7 @@ const CategoryPage = () => {
   const { name } = useParams<{ name: string }>();
   const navigate = useNavigate();
   const key = (name || "").toLowerCase();
-  const config = categoryConfig[key];
+  const theme = categoryThemes[key];
 
   const [items, setItems] = useState<FeaturedItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,7 +73,7 @@ const CategoryPage = () => {
           old_price: item.old_price,
           image_url: item.image_url,
           store_name: item.sme_stores?.brand_name || "The Hive Store",
-          category: item.category || config?.title || "General",
+          category: item.category || theme?.title || "General",
           is_featured: (item.stock_count ?? 0) > 10,
           rating: Math.round((3.5 + Math.random() * 1.5) * 10) / 10,
           review_count: Math.floor(Math.random() * 300) + 10,
@@ -97,9 +93,16 @@ const CategoryPage = () => {
   const vendors = useMemo(() => [...new Set(items.map(i => i.store_name))], [items]);
   const filtered = vendorFilter ? items.filter(i => i.store_name === vendorFilter) : items;
 
-  if (!config) {
+  const handleBuyNow = (item: FeaturedItem) => {
+    setSelectedItem(item);
+    setDrawerOpen(true);
+  };
+
+  const themeClasses = theme ? { btnBg: theme.btnBg, btnHover: theme.btnHover, btnText: theme.btnText } : undefined;
+
+  if (!theme) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <p className="text-2xl font-bold text-foreground mb-4">Category not found</p>
           <button onClick={() => navigate("/customer-dash")} className="btn-gold px-6 py-3 text-sm">Back to Dashboard</button>
@@ -109,37 +112,59 @@ const CategoryPage = () => {
   }
 
   return (
-    <div className="min-h-screen relative">
-      <HoneycombBackground />
-      
-      {/* Gradient wash */}
-      <div className="fixed inset-0 pointer-events-none z-0" style={{ background: config.gradient }} />
+    <div className="min-h-screen relative bg-background">
+      {/* Dynamic honeycomb background bound to category color */}
+      <ThemedHoneycombBackground color={theme.honeycombColor} />
+
+      {/* Radial gradient wash */}
+      <div className="fixed inset-0 pointer-events-none z-0" style={{ background: theme.gradient }} />
 
       <div className="relative z-10">
-        {/* Header */}
-        <div className="sticky top-0 z-30 glass-header px-4 py-3 flex items-center gap-3">
+        {/* Sticky header */}
+        <motion.div
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="sticky top-0 z-30 glass-header px-4 py-3 flex items-center gap-3"
+        >
           <button onClick={() => navigate("/customer-dash")} className="p-2 rounded-xl hover:bg-secondary transition-colors text-foreground">
             <ArrowLeft size={20} />
           </button>
-          <span className="text-2xl">{config.emoji}</span>
-          <h1 className="text-lg font-display font-bold text-foreground">{config.title}</h1>
-        </div>
+          <span className="text-2xl">{theme.emoji}</span>
+          <h1 className="text-lg font-display font-bold text-foreground">{theme.title}</h1>
+        </motion.div>
 
         <div className="max-w-6xl mx-auto px-4 py-6">
-          {/* Title */}
-          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+          {/* Hero title */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-6"
+          >
             <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground">
-              {config.emoji} {config.title}
+              {theme.emoji} {theme.title}
             </h2>
-            <p className="text-muted-foreground mt-1">Browse the best {config.title.toLowerCase()} products & services on The Hive</p>
+            <p className="text-muted-foreground mt-1">{theme.subtitle}</p>
           </motion.div>
 
+          {/* === CATEGORY-SPECIFIC SECTIONS === */}
+          <AnimatePresence mode="wait">
+            {key === "tech" && <TechBanner />}
+            {key === "food" && <FoodHotSection items={items} onBuyNow={handleBuyNow} />}
+            {key === "fashion" && <FashionMasonry items={items} onBuyNow={handleBuyNow} />}
+          </AnimatePresence>
+
           {/* Vendor filter pills */}
-          <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide mb-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide mb-6"
+          >
             <button
               onClick={() => setVendorFilter(null)}
               className={`shrink-0 px-4 py-2 rounded-full text-xs font-semibold transition-colors border ${
-                !vendorFilter ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-foreground hover:border-primary/30"
+                !vendorFilter ? theme.pillActive : "bg-card border-border text-foreground hover:border-primary/30"
               }`}
             >
               <Filter size={12} className="inline mr-1" /> All Vendors
@@ -149,15 +174,15 @@ const CategoryPage = () => {
                 key={v}
                 onClick={() => setVendorFilter(v === vendorFilter ? null : v)}
                 className={`shrink-0 px-4 py-2 rounded-full text-xs font-semibold transition-colors border ${
-                  vendorFilter === v ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-foreground hover:border-primary/30"
+                  vendorFilter === v ? theme.pillActive : "bg-card border-border text-foreground hover:border-primary/30"
                 }`}
               >
                 {v}
               </button>
             ))}
-          </div>
+          </motion.div>
 
-          {/* Grid */}
+          {/* Product grid — standard hive_catalogue layout */}
           {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[...Array(8)].map((_, i) => (
@@ -165,15 +190,16 @@ const CategoryPage = () => {
               ))}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-4xl mb-3">{config.emoji}</p>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20">
+              <p className="text-4xl mb-3">{theme.emoji}</p>
               <p className="text-lg font-semibold text-foreground">No items found</p>
-              <p className="text-sm text-muted-foreground mt-1">Check back soon for new {config.title.toLowerCase()} products!</p>
-            </div>
+              <p className="text-sm text-muted-foreground mt-1">Check back soon for new {theme.title.toLowerCase()} products!</p>
+            </motion.div>
           ) : (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
               className="grid grid-cols-2 md:grid-cols-4 gap-4"
             >
               {filtered.map((item, i) => (
@@ -181,7 +207,8 @@ const CategoryPage = () => {
                   key={item.id}
                   item={item}
                   index={i}
-                  onBuyNow={(it) => { setSelectedItem(it); setDrawerOpen(true); }}
+                  onBuyNow={handleBuyNow}
+                  themeClasses={themeClasses}
                 />
               ))}
             </motion.div>
