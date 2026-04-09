@@ -18,7 +18,7 @@ const TrackOrders = () => {
       setLoading(true);
       const { data } = await supabase
         .from("orders")
-        .select("id, total_price, status, created_at, hive_catalogue(product_name)")
+        .select("id, total_price, status, created_at, hive_catalogue!orders_item_id_fkey(product_name)")
         .eq("buyer_id", user.id)
         .not("status", "in", '("delivered","cancelled")')
         .order("created_at", { ascending: false })

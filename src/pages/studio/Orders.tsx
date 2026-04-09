@@ -41,7 +41,7 @@ const Orders = () => {
 
       const { data, error } = await supabase
         .from("orders")
-        .select("id, buyer_id, total_price, status, created_at, hive_catalogue(product_name)")
+        .select("id, buyer_id, total_price, status, created_at, hive_catalogue!orders_item_id_fkey(product_name)")
         .eq("sme_id", store.id)
         .order("created_at", { ascending: false })
         .limit(50);
