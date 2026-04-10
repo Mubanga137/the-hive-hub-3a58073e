@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Video, Link2, Package, Briefcase, ShoppingCart, Coins,
-  LogOut, Menu, X, ChevronRight, Warehouse
+  LogOut, Menu, X, ChevronRight, Warehouse, Globe, BookOpen, Tag, BarChart3, Wallet
 } from "lucide-react";
 import hiveLogo from "@/assets/hive-logo.jpeg";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,8 +12,6 @@ import HoneycombBackground from "@/components/HoneycombBackground";
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
-
-import { Globe } from "lucide-react";
 
 const sidebarModules = [
   {
@@ -25,8 +23,7 @@ const sidebarModules = [
   {
     group: "Creator Studio",
     items: [
-      { label: "Pulse Reels", icon: Video, path: "/retailer-studio/reels" },
-      { label: "Product Links", icon: Link2, path: "/retailer-studio/links" },
+      { label: "Creator Studio", icon: Video, path: "/retailer-studio/creator" },
     ],
   },
   {
@@ -35,7 +32,7 @@ const sidebarModules = [
       { label: "Products", icon: Package, path: "/retailer-studio/products" },
       { label: "Services", icon: Briefcase, path: "/retailer-studio/services" },
       { label: "Wholesale Bounty Hub", icon: Warehouse, path: "/retailer-studio/wholesale" },
-      { label: "🌐 Online Storefront", icon: Globe, path: "/retailer-studio/storefront" },
+      { label: "Storefront Builder", icon: Globe, path: "/retailer-studio/storefront" },
     ],
   },
   {
@@ -43,6 +40,15 @@ const sidebarModules = [
     items: [
       { label: "Orders", icon: ShoppingCart, path: "/retailer-studio/orders" },
       { label: "Pulse Credits", icon: Coins, path: "/retailer-studio/credits" },
+    ],
+  },
+  {
+    group: "Business Suite",
+    items: [
+      { label: "Kantemba Ledger", icon: BookOpen, path: "/retailer-studio/kantemba" },
+      { label: "Marketing & Promos", icon: Tag, path: "/retailer-studio/marketing" },
+      { label: "Analytics & Customers", icon: BarChart3, path: "/retailer-studio/analytics" },
+      { label: "Hive Escrow Wallet", icon: Wallet, path: "/retailer-studio/escrow" },
     ],
   },
 ];

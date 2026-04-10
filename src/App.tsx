@@ -15,14 +15,17 @@ import CustomerDashboard from "./pages/CustomerDashboard.tsx";
 import CategoryPage from "./pages/CategoryPage.tsx";
 import StorePage from "./pages/StorePage.tsx";
 import NotFound from "./pages/NotFound.tsx";
-import PulseReels from "./pages/studio/PulseReels.tsx";
-import ProductLinks from "./pages/studio/ProductLinks.tsx";
+import CreatorStudio from "./pages/studio/CreatorStudio.tsx";
 import Products from "./pages/studio/Products.tsx";
 import Services from "./pages/studio/Services.tsx";
 import Orders from "./pages/studio/Orders.tsx";
 import PulseCredits from "./pages/studio/PulseCredits.tsx";
 import WholesaleBountyHub from "./pages/studio/WholesaleBountyHub.tsx";
-import OnlineStorefront from "./pages/studio/OnlineStorefront.tsx";
+import StorefrontBuilder from "./pages/studio/StorefrontBuilder.tsx";
+import KantembaLedger from "./pages/studio/KantembaLedger.tsx";
+import MarketingPromos from "./pages/studio/MarketingPromos.tsx";
+import AnalyticsCustomers from "./pages/studio/AnalyticsCustomers.tsx";
+import HiveEscrowWallet from "./pages/studio/HiveEscrowWallet.tsx";
 
 const queryClient = new QueryClient();
 
@@ -47,14 +50,17 @@ const App = () => (
             {/* Vendor / SME — temporarily open */}
             <Route path="/retailer-studio" element={<RetailerStudioDashboard />} />
             <Route path="/studio" element={<RetailerStudioDashboard />} />
-            <Route path="/retailer-studio/reels" element={<PulseReels />} />
-            <Route path="/retailer-studio/links" element={<ProductLinks />} />
+            <Route path="/retailer-studio/creator" element={<CreatorStudio />} />
             <Route path="/retailer-studio/products" element={<Products />} />
             <Route path="/retailer-studio/services" element={<Services />} />
             <Route path="/retailer-studio/orders" element={<Orders />} />
             <Route path="/retailer-studio/credits" element={<PulseCredits />} />
             <Route path="/retailer-studio/wholesale" element={<WholesaleBountyHub />} />
-            <Route path="/retailer-studio/storefront" element={<OnlineStorefront />} />
+            <Route path="/retailer-studio/storefront" element={<StorefrontBuilder />} />
+            <Route path="/retailer-studio/kantemba" element={<KantembaLedger />} />
+            <Route path="/retailer-studio/marketing" element={<MarketingPromos />} />
+            <Route path="/retailer-studio/analytics" element={<AnalyticsCustomers />} />
+            <Route path="/retailer-studio/escrow" element={<HiveEscrowWallet />} />
 
             {/* Wholesaler — temporarily open */}
             <Route path="/warehouse" element={<Warehouse />} />
