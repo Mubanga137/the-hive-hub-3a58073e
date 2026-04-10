@@ -110,7 +110,7 @@ const CreatorStudio = () => {
     if (!title.trim()) { toast.error("Title is required."); return; }
     setPublishing(true);
 
-    const payload: Record<string, unknown> = {
+    const payload: any = {
       product_name: title.trim(),
       sme_id: storeId,
       item_type: "product",
