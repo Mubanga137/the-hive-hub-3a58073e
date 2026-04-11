@@ -150,7 +150,7 @@ const CreatorStudio = () => {
       else payload.image_url = uploadedUrl;
     }
 
-    const { error } = await supabase.from("hive_catalogue").insert(payload);
+    const { error } = await supabase.from("hive_catalogue").insert(payload as any);
     if (error) { toast.error(error.message); setPublishing(false); return; }
 
     if (mode === "whatsapp") {
